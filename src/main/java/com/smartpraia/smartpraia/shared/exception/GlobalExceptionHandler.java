@@ -1,16 +1,18 @@
 package com.smartpraia.smartpraia.shared.exception;
+import java.time.LocalDateTime;
+import java.util.List;
+
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import com.smartpraia.smartpraia.shared.exception.EmailJaCadastradoException;
 
 import jakarta.servlet.http.HttpServletRequest;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
+@RestControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(RecursoNaoEncontradoException.class)
@@ -82,6 +84,39 @@ public class GlobalExceptionHandler {
         );
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(erro);
+    }
+
+    @ExceptionHandler(CnpjJaCadastradoException.class)
+    public ResponseEntity<ApiError> tratarCnpjDuplicado(
+        CnpjJaCadastradoException ex,
+        HttpServletRequest request
+    ){
+        ApiError erro = new ApiError(
+            LocalDateTime.now(),
+            409,
+            "Conflict",
+            ex.getMessage(),
+            request.getRequestURI(),
+            List.of()
+        );
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(erro);
+    }
+
+    @ExceptionHandler(EmailJaCadastradoException.class)
+    public ResponseEntity<ApiError> tratarEmailJaCadastrado(
+        EmailJaCadastradoException ex,
+        HttpServletRequest request
+    ){
+        ApiError erro = new ApiError(
+            LocalDateTime.now(),
+            HttpStatus.CONFLICT.value(),
+            "Conflito",
+            ex.getMessage(),
+            request.getRequestURI(),
+            List.of()
+        );
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(erro);
     }
 
 }

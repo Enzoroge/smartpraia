@@ -40,12 +40,12 @@ public class RestauranteController {
         return ResponseEntity.ok(restaurantes);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/restaurante/{id}")
     public ResponseEntity<Restaurante> buscarPorId(@PathVariable Long id){
         Restaurante restaurante = service.buscarPorId(id);
         return ResponseEntity.ok(restaurante);
     }
-     @DeleteMapping("/{id}")
+     @DeleteMapping("/restaurante/{id}")
      public ResponseEntity<Void> excluir(@PathVariable Long id) {
 
         service.excluir(id);

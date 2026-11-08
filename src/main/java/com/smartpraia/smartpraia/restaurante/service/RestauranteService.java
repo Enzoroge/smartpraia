@@ -1,11 +1,13 @@
 package com.smartpraia.smartpraia.restaurante.service;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import com.smartpraia.smartpraia.restaurante.model.Restaurante;
 import com.smartpraia.smartpraia.restaurante.repository.RestauranteRepository;
 import com.smartpraia.smartpraia.restaurante.dto.RestauranteRequestDTO;
 import com.smartpraia.smartpraia.shared.exception.RecursoNaoEncontradoException;
+import com.smartpraia.smartpraia.shared.exception.CnpjJaCadastradoException;
 import java.util.List;
 
 
@@ -18,6 +20,13 @@ public class RestauranteService {
     }
 
     public Restaurante cadastrar(RestauranteRequestDTO dto){
+
+        if(repository.existsByCnpj(dto.getCnpj())){
+            throw new CnpjJaCadastradoException(
+                "Ja existe Restaurante cadastrado com esse cnpj"
+            );
+
+        }
         Restaurante restaurante = new Restaurante();
 
         restaurante.setNome(dto.getNome());
