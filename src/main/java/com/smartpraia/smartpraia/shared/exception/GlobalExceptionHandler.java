@@ -119,4 +119,24 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(erro);
     }
 
+    @ExceptionHandler(RegraNegocioException.class)
+
+    public ResponseEntity<ApiError> tratarRegraNegocio(
+        RegraNegocioException ex,
+        HttpServletRequest request
+    ){
+        ApiError erro = new ApiError(
+            LocalDateTime.now(), 
+            400,
+            "Bad request",
+            
+            ex.getMessage(),
+            request.getRequestURI(),
+            List.of()
+        );
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(erro);
+    }
+
+
 }
