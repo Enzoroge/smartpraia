@@ -137,6 +137,24 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(erro);
     }
+       
+    @ExceptionHandler(AuthenticationException.class)
+public ResponseEntity<ApiError> tratarErroAutenticacao(
+        AuthenticationException ex,
+        HttpServletRequest request) {
 
+    ApiError erro = new ApiError(
+            LocalDateTime.now(),
+            HttpStatus.UNAUTHORIZED.value(),
+            "Não autorizado",
+            "E-mail ou senha inválidos.",
+            request.getRequestURI(),
+            List.of()
+    );
+
+    return ResponseEntity
+            .status(HttpStatus.UNAUTHORIZED)
+            .body(erro);
+}
 
 }

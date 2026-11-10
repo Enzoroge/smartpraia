@@ -9,6 +9,8 @@ import com.smartpraia.smartpraia.usuario.model.Usuario;
 import com.smartpraia.smartpraia.usuario.dto.UsuarioRequestDTO;
 import com.smartpraia.smartpraia.usuario.dto.UsuarioResponseDTO;
 import java.util.List;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 
 @RestController
 // @RequestMapping("/usuarios")
@@ -21,11 +23,23 @@ public class UsuarioController {
     }
 
     @PostMapping("/usuario")
-    public ResponseEntity<UsuarioResponseDTO> cadastrar(@Valid @RequestBody UsuarioRequestDTO dto){
-        UsuarioResponseDTO usuario = service.cadastrar(dto);
+        public ResponseEntity<UsuarioResponseDTO> cadastrar(
+                @Valid @RequestBody UsuarioRequestDTO dto,
+                @AuthenticationPrincipal Jwt jwt) {
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(usuario);
-    }
+            Number restauranteIdToken = jwt.getClaim("restauranteId");
+
+            Long restauranteId = restauranteIdToken != null
+                    ? restauranteIdToken.longValue()
+                    : null;
+
+            UsuarioResponseDTO resposta = service.cadastrar(
+                    dto,
+                    restauranteId
+            );
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(resposta);
+}
 
     @GetMapping("/usuarios")
     public ResponseEntity<List<UsuarioResponseDTO>> listarTodos(){
