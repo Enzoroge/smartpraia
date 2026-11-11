@@ -42,13 +42,23 @@ public class UsuarioController {
 }
 
     @GetMapping("/usuarios")
-    public ResponseEntity<List<UsuarioResponseDTO>> listarTodos(){
-        return ResponseEntity.ok(service.listarTodos());
+    public ResponseEntity<List<UsuarioResponseDTO>> listarTodos(@AuthenticationPrincipal Jwt jwt){
+        Number restauranteIdToken = jwt.getClaim("restauranteId");
+
+        Long restauranteId = restauranteIdToken != null
+        ? restauranteIdToken.longValue():null;
+        return ResponseEntity.ok(service.listarTodos(restauranteId));
     }
 
     @GetMapping("/usuario/{id}")
-    public ResponseEntity<UsuarioResponseDTO> buscarPorId(@PathVariable Long id){
-        return ResponseEntity.ok(service.buscarPorId(id));
+    public ResponseEntity<UsuarioResponseDTO> buscarPorId(@PathVariable Long id, @AuthenticationPrincipal Jwt jwt){
+
+        Number restauranteIdToken = jwt.getClaim("restauranteId");
+
+        Long restauranteId = restauranteIdToken != null ? restauranteIdToken.longValue():null;
+       
+
+        return ResponseEntity.ok(service.buscarPorId(id, restauranteId));
     }
 
 }

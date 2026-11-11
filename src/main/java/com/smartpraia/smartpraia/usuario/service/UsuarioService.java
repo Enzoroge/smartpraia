@@ -30,68 +30,79 @@ public class UsuarioService {
         this.restauranteRepository = restauranteRepository;
     }
 
-    public UsuarioResponseDTO cadastrar(UsuarioRequestDTO dto){
+    
+public UsuarioResponseDTO cadastrar(
+        UsuarioRequestDTO dto,
+        Long restauranteIdToken) {
 
-        if(repository.existsByEmail(dto.email())){
-            throw new EmailJaCadastradoException(
-                "Ja existe usuário cadastrado com esse e-mail"
+    // Verifica se o e-mail já está cadastrado
+    if (repository.existsByEmail(dto.email())) {
+        throw new EmailJaCadastradoException(
+                "Já existe usuário cadastrado com esse e-mail."
+        );
+    }
+
+    // Impede a criação de SUPER_ADMIN por esta operação
+    if (dto.perfil() == PerfilUsuario.SUPER_ADMIN) {
+        throw new RegraNegocioException(
+                "Não é permitido cadastrar SUPER_ADMIN por esta operação."
+        );
+    }
+
+    // Verifica se o usuário autenticado possui restaurante
+    if (restauranteIdToken == null) {
+        throw new RegraNegocioException(
+                "O usuário autenticado não está vinculado a um restaurante."
+        );
+    }
+
+    // Busca o restaurante identificado pelo JWT
+    Restaurante restaurante = restauranteRepository
+            .findById(restauranteIdToken)
+            .orElseThrow(() -> new RecursoNaoEncontradoException(
+                    "Restaurante não encontrado com ID: " + restauranteIdToken
+            ));
+
+    // Cria o usuário
+    Usuario usuario = new Usuario();
+
+    usuario.setNome(dto.nome());
+    usuario.setEmail(dto.email());
+    usuario.setSenha(passwordEncoder.encode(dto.senha()));
+    usuario.setPerfil(dto.perfil());
+    usuario.setRestaurante(restaurante);
+
+    Usuario usuarioSalvo = repository.save(usuario);
+
+    return converterParaDTO(usuarioSalvo);
+}
+
+
+    public List<UsuarioResponseDTO> listarTodos(Long restauranteIdToken){
+        if(restauranteIdToken == null){
+            throw new RegraNegocioException(
+                "O usuário autenticado não esta vinculado a um restaurante"
             );
         }
 
-        Usuario usuario = new Usuario();
-            usuario.setNome(dto.nome());
-            usuario.setEmail(dto.email());
-
-            usuario.setSenha(passwordEncoder.encode(dto.senha()));
-            usuario.setPerfil(dto.perfil());
-
-            if(dto.perfil() == PerfilUsuario.SUPER_ADMIN){
-                if(dto.restauranteId() != null){
-                    throw new RegraNegocioException(
-                        "O Super_ADMIN não deve estar vinculado a nenhum restaurante"
-                    );
-                }
-
-                usuario.setRestaurante(null);
-            }
-            else{
-                if(dto.restauranteId() == null){
-                    throw new RegraNegocioException(
-                        "É obrigatório informar o restaurante do usuario"
-                    );
-                }
-
-                 Restaurante restaurante = restauranteRepository.findById(dto.restauranteId())
-                .orElseThrow(() -> new RecursoNaoEncontradoException(
-                        "Restaurante não encontrado com ID: " + dto.restauranteId()
-                ));
-
-        usuario.setRestaurante(restaurante);
-    }
-
-
-            Usuario usuarioSalvo = repository.save(usuario);
-
-            return converterParaDTO(usuarioSalvo);
-
-       
-        
-    }
-
-    public List<UsuarioResponseDTO> listarTodos(){
-        return repository.findAll()
+        return repository.findAllByRestaurante_Id(restauranteIdToken)
         .stream()
         .map(this::converterParaDTO)
         .toList();
     }
 
-    public UsuarioResponseDTO buscarPorId(Long id){
-        Usuario usuario = repository.findById(id)
-        .orElseThrow(()-> new RecursoNaoEncontradoException(
-            "Usuário com esse id não encontrado " + id
-        ));
+    public UsuarioResponseDTO buscarPorId(Long id, Long restauranteIdToken){
+       if(restauranteIdToken == null){
+        throw new RegraNegocioException(
+            "O usuário autenticado não está vinculado a um restaurante"
+        );
 
-        return converterParaDTO(usuario);
+       }
+       Usuario usuario = repository.findByIdAndRestaurante_Id(id, restauranteIdToken)
+       .orElseThrow(() -> new RecursoNaoEncontradoException(
+        "Usuário não encontrado"
+       ));
+       return converterParaDTO(usuario);
     }
 
     private UsuarioResponseDTO converterParaDTO(Usuario usuario){
