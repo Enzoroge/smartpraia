@@ -1,6 +1,8 @@
 package com.smartpraia.smartpraia.restaurante.controller;
 import java.util.List;
 
+import com.smartpraia.smartpraia.restaurante.dto.CadastroRestauranteDTO;
+
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,6 +27,13 @@ public class RestauranteController {
 
     public RestauranteController(RestauranteService service){
         this.service = service;
+    }
+
+    @PostMapping("/cadastro")
+    public ResponseEntity<Restaurante> cadastrarComProprietario(@Valid @RequestBody CadastroRestauranteDTO dto){
+        Restaurante restaurante = service.cadastrarComProprietario(dto);
+
+        return ResponseEntity.status(201).body(restaurante);
     }
 
     @PostMapping("/restaurante")

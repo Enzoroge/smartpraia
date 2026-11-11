@@ -1,5 +1,14 @@
 package com.smartpraia.smartpraia.restaurante.service;
 
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+import com.smartpraia.smartpraia.usuario.model.Usuario;
+import com.smartpraia.smartpraia.usuario.model.PerfilUsuario;
+import com.smartpraia.smartpraia.usuario.repository.UsuarioRepository;
+import com.smartpraia.smartpraia.shared.exception.EmailJaCadastradoException;
+import com.smartpraia.smartpraia.restaurante.dto.CadastroRestauranteDTO;
+
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
@@ -13,10 +22,18 @@ import java.util.List;
 
 @Service 
 public class RestauranteService {
-    private final RestauranteRepository repository;
 
-    public RestauranteService(RestauranteRepository repository) {
+    private final UsuarioRepository usuarioRepository;
+    private final RestauranteRepository repository;
+    private final PasswordEncoder passwordEncoder;
+
+    public RestauranteService(
+        RestauranteRepository repository, 
+        UsuarioRepository usuarioRepository, 
+        PasswordEncoder passwordEncoder) {
         this.repository = repository;
+        this.usuarioRepository = usuarioRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public Restaurante cadastrar(RestauranteRequestDTO dto){
@@ -36,6 +53,51 @@ public class RestauranteService {
 
         return repository.save(restaurante);
 
+    }
+
+   @Transactional
+    public Restaurante cadastrarComProprietario(CadastroRestauranteDTO dto) {
+
+        // Verifica se o CNPJ já está cadastrado
+        if (repository.existsByCnpj(dto.cnpj())) {
+            throw new CnpjJaCadastradoException(
+                    "Já existe restaurante cadastrado com esse CNPJ."
+            );
+        }
+
+        // Verifica se o e-mail do proprietário já está cadastrado
+        if (usuarioRepository.existsByEmail(dto.emailProprietario())) {
+            throw new EmailJaCadastradoException(
+                    "Já existe usuário cadastrado com esse e-mail."
+            );
+        }
+
+        // Cria o restaurante
+        Restaurante restaurante = new Restaurante();
+
+        restaurante.setNome(dto.nomeRestaurante());
+        restaurante.setCnpj(dto.cnpj());
+        restaurante.setEmail(dto.emailRestaurante());
+        restaurante.setTelefone(dto.telefone());
+
+        Restaurante restauranteSalvo = repository.save(restaurante);
+
+        // Cria o primeiro proprietário
+        Usuario proprietario = new Usuario();
+
+        proprietario.setNome(dto.nomeProprietario());
+        proprietario.setEmail(dto.emailProprietario());
+        proprietario.setSenha(passwordEncoder.encode(dto.senha()));
+
+        // Define o perfil automaticamente
+        proprietario.setPerfil(PerfilUsuario.PROPRIETARIO);
+
+        // Vincula o proprietário ao restaurante recém-criado
+        proprietario.setRestaurante(restauranteSalvo);
+
+        usuarioRepository.save(proprietario);
+
+        return restauranteSalvo;
     }
 
     public List<Restaurante> listarTodos(){
