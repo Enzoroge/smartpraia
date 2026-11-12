@@ -61,6 +61,7 @@ public class SecurityConfig {
                   
                     "/usuario"
                 ).hasAnyRole("PROPRIETARIO", "GERENTE")
+                .requestMatchers(HttpMethod.POST, "/restaurante").hasRole("SUPER_ADMIN")
                 
                 .anyRequest().authenticated()
             )

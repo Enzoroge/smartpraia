@@ -17,6 +17,9 @@ import com.smartpraia.smartpraia.restaurante.model.Restaurante;
 import com.smartpraia.smartpraia.restaurante.service.RestauranteService;
 import com.smartpraia.smartpraia.restaurante.dto.RestauranteRequestDTO;
 
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
+
 import org.springframework.http.ResponseEntity;
 
 @RestController
@@ -44,23 +47,41 @@ public class RestauranteController {
 
     
     @GetMapping("/restaurantes")
-    public ResponseEntity<List<Restaurante>> listarTodos(){
-        List<Restaurante> restaurantes = service.listarTodos();
+    public ResponseEntity<List<Restaurante>> listarTodos(@AuthenticationPrincipal Jwt jwt){
+
+        String perfil = jwt.getClaimAsString("perfil");
+
+        Number restauranteIdToken = jwt.getClaim("restauranteId");
+
+        Long restauranteId = restauranteIdToken != null
+        ? restauranteIdToken.longValue() : null;
+
+       List<Restaurante> restaurantes = service.listarTodos(
+            restauranteId,
+            perfil
+    );
         return ResponseEntity.ok(restaurantes);
     }
 
     @GetMapping("/restaurante/{id}")
-    public ResponseEntity<Restaurante> buscarPorId(@PathVariable Long id){
-        Restaurante restaurante = service.buscarPorId(id);
+    public ResponseEntity<Restaurante> buscarPorId(@PathVariable Long id, @AuthenticationPrincipal Jwt jwt){
+
+        String perfil = jwt.getClaimAsString("perfil");
+        Number restauranteIdToken = jwt.getClaim("restauranteId");
+
+        Long restauranteId = restauranteIdToken != null
+        ? restauranteIdToken.longValue(): null;
+
+        Restaurante restaurante = service.buscarPorId(id, restauranteId, perfil);
         return ResponseEntity.ok(restaurante);
     }
-     @DeleteMapping("/restaurante/{id}")
-     public ResponseEntity<Void> excluir(@PathVariable Long id) {
+    //  @DeleteMapping("/restaurante/{id}")
+    //  public ResponseEntity<Void> excluir(@PathVariable Long id) {
 
-        service.excluir(id);
+    //     service.excluir(id);
 
-        return ResponseEntity.noContent().build();
-    }
+    //     return ResponseEntity.noContent().build();
+    // }
 
     
 

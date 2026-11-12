@@ -17,6 +17,7 @@ import com.smartpraia.smartpraia.restaurante.repository.RestauranteRepository;
 import com.smartpraia.smartpraia.restaurante.dto.RestauranteRequestDTO;
 import com.smartpraia.smartpraia.shared.exception.RecursoNaoEncontradoException;
 import com.smartpraia.smartpraia.shared.exception.CnpjJaCadastradoException;
+import com.smartpraia.smartpraia.shared.exception.RegraNegocioException;
 import java.util.List;
 
 
@@ -100,19 +101,67 @@ public class RestauranteService {
         return restauranteSalvo;
     }
 
-    public List<Restaurante> listarTodos(){
-        return repository.findAll();
+    public List<Restaurante> listarTodos(Long restauranteId, String perfil){
+        if(PerfilUsuario.SUPER_ADMIN.name().equals(perfil)){
+            return repository.findAll();
+        }
+
+        if(!PerfilUsuario.PROPRIETARIO.name().equals(perfil)){
+            throw new RegraNegocioException(
+                "Você não tem permissão para consultar os restaurantes"
+            );
+        }
+
+        if(restauranteId == null){
+            throw new RegraNegocioException(
+                "O usuário autenticado não está vinculado a um restaurante"
+            );
+        }
+
+        return repository.findById(restauranteId)
+        .map(List::of)
+        .orElseThrow(()-> new RecursoNaoEncontradoException(
+            "Restaurante não encotrado"
+        ));
+      
 
     }
 
-    public Restaurante buscarPorId(Long id){
-        return repository.findById(id)
-        .orElseThrow(()-> new RecursoNaoEncontradoException("Restaurante não encontrado com o Id " + id));
-    }
+    public Restaurante buscarPorId(Long id, Long restauranteIdToken, String perfil){
+        if(PerfilUsuario.SUPER_ADMIN.name().equals(perfil)){
+            return repository.findById(id)
+             .orElseThrow(() -> new RecursoNaoEncontradoException(
+                        "Restaurante não encontrado com o ID " + id
+                ));
+        }
 
-    public void excluir(Long id){
-        Restaurante restaurante = buscarPorId(id);
-        repository.delete(restaurante);
-    }
+            if(!PerfilUsuario.PROPRIETARIO.name().equals(perfil)){
+                throw new RegraNegocioException(
+                    "Você não tem permissão para consultar este restaurante"
+                );
+            }
+
+            if(restauranteIdToken == null){
+                throw new RegraNegocioException(
+                    "O usuario autenticado não esta vinculado a um restaurante"
+                );
+            }
+
+            if(!id.equals(restauranteIdToken)){
+                throw new RecursoNaoEncontradoException(
+                    "Restaurante não encontrado"
+                );
+            }
+        
+      return repository.findById(restauranteIdToken)
+            .orElseThrow(() -> new RecursoNaoEncontradoException(
+                    "Restaurante não encontrado."
+            ));
+}
+
+    // public void excluir(Long id){
+    //     Restaurante restaurante = buscarPorId(id);
+    //     repository.delete(restaurante);
+    // }
 
 }
