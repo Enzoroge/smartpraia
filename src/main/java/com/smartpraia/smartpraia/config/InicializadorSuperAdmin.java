@@ -18,7 +18,7 @@ public class InicializadorSuperAdmin {
         PasswordEncoder passwordEncoder
     ){
         return args -> {
-            String email = "admin@smartpraia.com";
+            String email = "superadmin@smartpraia.com";
 
             if(usuarioRepository.findByEmail(email).isEmpty()){
                 Usuario adm = new Usuario();
