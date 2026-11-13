@@ -9,4 +9,6 @@ public interface RestauranteRepository extends JpaRepository<Restaurante, Long> 
 
     boolean existsByCnpj(String cnpj);
 
+    
+
 }

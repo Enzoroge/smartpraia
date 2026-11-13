@@ -1,24 +1,22 @@
 package com.smartpraia.smartpraia.restaurante.service;
 
-import org.springframework.transaction.annotation.Transactional;
+import java.util.List;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
-
-import com.smartpraia.smartpraia.usuario.model.Usuario;
-import com.smartpraia.smartpraia.usuario.model.PerfilUsuario;
-import com.smartpraia.smartpraia.usuario.repository.UsuarioRepository;
-import com.smartpraia.smartpraia.shared.exception.EmailJaCadastradoException;
-import com.smartpraia.smartpraia.restaurante.dto.CadastroRestauranteDTO;
-
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.smartpraia.smartpraia.restaurante.dto.CadastroRestauranteDTO;
+import com.smartpraia.smartpraia.restaurante.dto.RestauranteRequestDTO;
 import com.smartpraia.smartpraia.restaurante.model.Restaurante;
 import com.smartpraia.smartpraia.restaurante.repository.RestauranteRepository;
-import com.smartpraia.smartpraia.restaurante.dto.RestauranteRequestDTO;
-import com.smartpraia.smartpraia.shared.exception.RecursoNaoEncontradoException;
 import com.smartpraia.smartpraia.shared.exception.CnpjJaCadastradoException;
+import com.smartpraia.smartpraia.shared.exception.EmailJaCadastradoException;
+import com.smartpraia.smartpraia.shared.exception.RecursoNaoEncontradoException;
 import com.smartpraia.smartpraia.shared.exception.RegraNegocioException;
-import java.util.List;
+import com.smartpraia.smartpraia.usuario.model.PerfilUsuario;
+import com.smartpraia.smartpraia.usuario.model.Usuario;
+import com.smartpraia.smartpraia.usuario.repository.UsuarioRepository;
 
 
 @Service 
@@ -159,9 +157,25 @@ public class RestauranteService {
             ));
 }
 
-    // public void excluir(Long id){
-    //     Restaurante restaurante = buscarPorId(id);
-    //     repository.delete(restaurante);
-    // }
+    public void desativar(Long id){
+        Restaurante restaurante = repository.findById(id)
+        .orElseThrow(() -> new RecursoNaoEncontradoException(
+            "Restaurante não encontrado"
+        ));
+
+        restaurante.setAtivo(false);
+        repository.save(restaurante);
+    }
+
+    public void ativar(Long id){
+        Restaurante restaurante = repository.findById(id)
+        .orElseThrow(() -> new RecursoNaoEncontradoException(
+            "Restaurante não encontrado"
+        ));
+
+        restaurante.setAtivo(true);
+        
+        repository.save(restaurante);
+    }
 
 }

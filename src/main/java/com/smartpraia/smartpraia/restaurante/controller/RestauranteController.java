@@ -1,26 +1,23 @@
 package com.smartpraia.smartpraia.restaurante.controller;
 import java.util.List;
 
-import com.smartpraia.smartpraia.restaurante.dto.CadastroRestauranteDTO;
-
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.RestController;
 
-
+import com.smartpraia.smartpraia.restaurante.dto.CadastroRestauranteDTO;
+import com.smartpraia.smartpraia.restaurante.dto.RestauranteRequestDTO;
 import com.smartpraia.smartpraia.restaurante.model.Restaurante;
 import com.smartpraia.smartpraia.restaurante.service.RestauranteService;
-import com.smartpraia.smartpraia.restaurante.dto.RestauranteRequestDTO;
 
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
-
-import org.springframework.http.ResponseEntity;
+import jakarta.validation.Valid;
 
 @RestController
 // @RequestMapping("/restaurantes")
@@ -75,14 +72,21 @@ public class RestauranteController {
         Restaurante restaurante = service.buscarPorId(id, restauranteId, perfil);
         return ResponseEntity.ok(restaurante);
     }
-    //  @DeleteMapping("/restaurante/{id}")
-    //  public ResponseEntity<Void> excluir(@PathVariable Long id) {
+     @DeleteMapping("/restaurante/{id}")
+     public ResponseEntity<Void> excluir(@PathVariable Long id) {
 
-    //     service.excluir(id);
+        service.desativar(id);
 
-    //     return ResponseEntity.noContent().build();
-    // }
+        return ResponseEntity.noContent().build();
+    }
 
+    @PutMapping("/restaurante/{id}/ativar")
+        public ResponseEntity<Void> ativar(@PathVariable Long id) {
+
+            service.ativar(id);
+
+            return ResponseEntity.noContent().build();
+}
     
 
 }
