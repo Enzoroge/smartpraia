@@ -1,13 +1,15 @@
 package com.smartpraia.smartpraia.usuario.service;
+import java.time.Instant;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.oauth2.jwt.JwsHeader;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
-import org.springframework.security.oauth2.jwt.JwsHeader;
 import org.springframework.stereotype.Service;
+
 import com.smartpraia.smartpraia.usuario.model.Usuario;
-import java.time.Instant;
 
 
 
@@ -35,7 +37,8 @@ public class TokenService {
         .subject(usuario.getEmail())
         .issuedAt(agora)
         .expiresAt(agora.plusMillis(expiration))
-        .claim("perfil", usuario.getPerfil().name());
+        .claim("perfil", usuario.getPerfil().name())
+        .claim("usuarioId", usuario.getId());
 
         if(usuario.getRestaurante() != null){
             claims.claim(

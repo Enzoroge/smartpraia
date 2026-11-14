@@ -19,6 +19,7 @@ import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import com.smartpraia.smartpraia.restaurante.repository.RestauranteRepository;
+import com.smartpraia.smartpraia.usuario.repository.UsuarioRepository;
 
 @Configuration
 public class JwtConfig {
@@ -42,7 +43,8 @@ public class JwtConfig {
     @Bean
     public JwtDecoder jwtDecoder(
         SecretKey secretKey,
-        RestauranteRepository restauranteRepository
+        RestauranteRepository restauranteRepository,
+        UsuarioRepository usuarioRepository
     ) {
 
         NimbusJwtDecoder decoder = NimbusJwtDecoder
@@ -54,10 +56,39 @@ public class JwtConfig {
 
             String perfil = jwt.getClaimAsString("perfil");
 
-            // O SUPER_ADMIN não está vinculado a um restaurante.
+            Object usuarioClaim = jwt.getClaims().get("usuarioId");
+
+            if (!(usuarioClaim instanceof Number)) {
+                return OAuth2TokenValidatorResult.failure(
+                    new OAuth2Error(
+                        "invalid_token",
+                        "Token sem usuário autenticado.",
+                        null
+                    )
+                );
+            }
+
+            Long usuarioId = ((Number) usuarioClaim).longValue();
+
+            boolean usuarioAtivo = usuarioRepository.findById(usuarioId)
+                .map(usuario -> usuario.getAtivo())
+                .orElse(false);
+
+            if (!usuarioAtivo) {
+                return OAuth2TokenValidatorResult.failure(
+                    new OAuth2Error(
+                        "invalid_token",
+                        "Usuário inativo ou não encontrado.",
+                        null
+                    )
+                );
+            }
+
+            // O SUPER_ADMIN não precisa estar vinculado a um restaurante.
             if ("SUPER_ADMIN".equals(perfil)) {
                 return OAuth2TokenValidatorResult.success();
             }
+
 
             Object claim = jwt.getClaims().get("restauranteId");
 
