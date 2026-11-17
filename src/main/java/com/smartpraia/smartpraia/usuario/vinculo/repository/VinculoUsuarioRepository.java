@@ -1,9 +1,9 @@
 
 package com.smartpraia.smartpraia.usuario.vinculo.repository;
-
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.smartpraia.smartpraia.usuario.vinculo.model.VinculoUsuario;
@@ -20,8 +20,18 @@ public interface VinculoUsuarioRepository
         Long restauranteId
     );
 
+    @EntityGraph (attributePaths = {"usuario", "restaurante"})
     Optional<VinculoUsuario> findByIdAndUsuario_Id(
         Long id,
         Long usuarioId
+    );
+
+    @EntityGraph(attributePaths = {"usuario", "restaurante"})
+    List<VinculoUsuario> findAllByRestaurante_IdAndAtivoTrue(Long restauranteId);
+
+    @EntityGraph(attributePaths = {"usuario", "restaurante"})
+    Optional<VinculoUsuario> findByUsuario_IdAndRestaurante_IdAndAtivoTrue(
+        Long usuarioId,
+        Long restauranteId
     );
 }
