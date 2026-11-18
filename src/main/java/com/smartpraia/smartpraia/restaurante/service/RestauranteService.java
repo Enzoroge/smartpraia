@@ -17,22 +17,29 @@ import com.smartpraia.smartpraia.shared.exception.RegraNegocioException;
 import com.smartpraia.smartpraia.usuario.model.PerfilUsuario;
 import com.smartpraia.smartpraia.usuario.model.Usuario;
 import com.smartpraia.smartpraia.usuario.repository.UsuarioRepository;
+import com.smartpraia.smartpraia.usuario.vinculo.model.VinculoUsuario;
+import com.smartpraia.smartpraia.usuario.vinculo.repository.VinculoUsuarioRepository;
 
 
 @Service 
 public class RestauranteService {
 
+
+
+    private final VinculoUsuarioRepository vinculoUsuarioRepository;
     private final UsuarioRepository usuarioRepository;
     private final RestauranteRepository repository;
     private final PasswordEncoder passwordEncoder;
 
     public RestauranteService(
+        VinculoUsuarioRepository vinculoUsuarioRepository,
         RestauranteRepository repository, 
         UsuarioRepository usuarioRepository, 
         PasswordEncoder passwordEncoder) {
         this.repository = repository;
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;
+        this.vinculoUsuarioRepository = vinculoUsuarioRepository;
     }
 
     public Restaurante cadastrar(RestauranteRequestDTO dto){
@@ -95,6 +102,14 @@ public class RestauranteService {
         proprietario.setRestaurante(restauranteSalvo);
 
         usuarioRepository.save(proprietario);
+
+        VinculoUsuario vinculo = new VinculoUsuario();
+        vinculo.setUsuario(proprietario);
+        vinculo.setRestaurante(restaurante);
+        vinculo.setPerfil(PerfilUsuario.PROPRIETARIO);
+        vinculo.setAtivo(true);
+
+        vinculoUsuarioRepository.save(vinculo);
 
         return restauranteSalvo;
     }
