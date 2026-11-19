@@ -157,4 +157,23 @@ public ResponseEntity<ApiError> tratarErroAutenticacao(
             .body(erro);
 }
 
+@ExceptionHandler(AcessoNegadoException.class)
+public ResponseEntity<ApiError> tratarAcessoNegado(
+        AcessoNegadoException ex,
+        HttpServletRequest request
+) {
+    ApiError erro = new ApiError(
+            LocalDateTime.now(),
+            HttpStatus.FORBIDDEN.value(),
+            "Forbidden",
+            ex.getMessage(),
+            request.getRequestURI(),
+            List.of()
+    );
+
+    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(erro);
+}
+
+
+
 }

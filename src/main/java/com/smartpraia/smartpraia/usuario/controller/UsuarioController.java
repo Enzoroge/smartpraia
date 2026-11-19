@@ -33,9 +33,12 @@ public class UsuarioController {
                     ? restauranteIdToken.longValue()
                     : null;
 
+                    String perfilUsuarioLogado = jwt.getClaimAsString("perfil");
+
             UsuarioResponseDTO resposta = service.cadastrar(
                     dto,
-                    restauranteId
+                    restauranteId, 
+                    perfilUsuarioLogado
             );
 
             return ResponseEntity.status(HttpStatus.CREATED).body(resposta);

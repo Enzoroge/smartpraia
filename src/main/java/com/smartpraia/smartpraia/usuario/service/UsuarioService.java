@@ -19,6 +19,7 @@ import com.smartpraia.smartpraia.usuario.model.Usuario;
 import com.smartpraia.smartpraia.usuario.repository.UsuarioRepository;
 import com.smartpraia.smartpraia.usuario.vinculo.model.VinculoUsuario;
 import com.smartpraia.smartpraia.usuario.vinculo.repository.VinculoUsuarioRepository;
+import com.smartpraia.smartpraia.shared.exception.AcessoNegadoException;
 
 @Service
 public class UsuarioService {
@@ -43,12 +44,43 @@ public class UsuarioService {
     @Transactional
     public UsuarioResponseDTO cadastrar(
             UsuarioRequestDTO dto,
-            Long restauranteIdToken) {
+            Long restauranteIdToken,
+            String perfilUsuarioLogado
+        
+        ) {
 
         if (restauranteIdToken == null) {
             throw new RegraNegocioException(
                     "O usuário autenticado não está vinculado a um restaurante."
             );
+        }
+
+       if (perfilUsuarioLogado == null) {
+    throw new RegraNegocioException(
+        "Não foi possível identificar o perfil do usuário autenticado."
+    );
+}
+
+        boolean permitido = switch (perfilUsuarioLogado) {
+
+        case "PROPRIETARIO" ->
+                dto.perfil() == PerfilUsuario.GERENTE ||
+                dto.perfil() == PerfilUsuario.GARCOM ||
+                dto.perfil() == PerfilUsuario.COZINHA ||
+                dto.perfil() == PerfilUsuario.CAIXA;
+
+        case "GERENTE" ->
+                dto.perfil() == PerfilUsuario.GARCOM ||
+                dto.perfil() == PerfilUsuario.COZINHA ||
+                dto.perfil() == PerfilUsuario.CAIXA;
+
+        default -> false;
+};
+
+      if(!permitido){
+        throw new AcessoNegadoException(
+                "Você não possui permissão para cadastrar este perfil de usuário."
+        );
         }
 
         if (dto.perfil() == PerfilUsuario.SUPER_ADMIN) {

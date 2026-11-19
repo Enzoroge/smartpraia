@@ -119,7 +119,7 @@ public class RestauranteService {
             return repository.findAll();
         }
 
-        if(!PerfilUsuario.PROPRIETARIO.name().equals(perfil)){
+        if(!PerfilUsuario.PROPRIETARIO.name().equals(perfil) && !PerfilUsuario.GERENTE.name().equals(perfil)){
             throw new RegraNegocioException(
                 "Você não tem permissão para consultar os restaurantes"
             );
@@ -148,7 +148,7 @@ public class RestauranteService {
                 ));
         }
 
-            if(!PerfilUsuario.PROPRIETARIO.name().equals(perfil)){
+            if(!PerfilUsuario.PROPRIETARIO.name().equals(perfil) && !PerfilUsuario.GERENTE.name().equals(perfil)){
                 throw new RegraNegocioException(
                     "Você não tem permissão para consultar este restaurante"
                 );
